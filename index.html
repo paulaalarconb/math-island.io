@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Islas de los Números</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#1fb5c9">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@700;800&display=swap">
+<style>
+/* VOICE: juguetón, claro, para niñas de 7 años; casi nada que leer, todo se escucha.
+   IDEA: un archipiélago de cuatro islas, cada una es una unidad de la prueba.
+   PICTURE: el mar con las islas en el inicio; en el juego, la tarjeta del desafío con su dibujo grande.
+   COLOUR and TYPE: mar turquesa, arena, coral; verde BIEN y rojo MAL. Fredoka para todo, Nunito en explicaciones.
+   LAYOUT: una columna centrada hasta 900px, botones enormes, respuestas en fila que se apilan en el teléfono. */
+:root{color-scheme:light;--sea:#1fb5c9;--sea2:#0e8fa8;--sand:#fff4dc;--ink:#25203a;--coral:#ff6b5b;--sun:#ffc93c;--ok:#22b45e;--bad:#e8424a;--card:#fffdf7;--line:#e7dcc4}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--sea);color:var(--ink);font:18px/1.45 "Fredoka","Trebuchet MS",sans-serif;overflow-x:clip;
+ background-image:radial-gradient(circle at 20% 15%,#5fd3e0 0 6%,transparent 7%),radial-gradient(circle at 80% 70%,#5fd3e0 0 4%,transparent 5%),linear-gradient(#36c4d6,#0e8fa8)}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,input:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
+.wrap{max-width:920px;margin:0 auto;padding:16px max(16px,env(safe-area-inset-left,0px)) 40px max(16px,env(safe-area-inset-right,0px))}
+[hidden]{display:none!important}
+h1{font-size:clamp(34px,7vw,52px);line-height:1.05;margin:8px 0 4px;color:#fff;text-shadow:0 3px 0 var(--sea2);text-wrap:balance}
+.sub{color:#e9fbff;margin:0 0 18px;font-size:18px}
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.chip{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:6px 16px;border-radius:999px;background:#ffffffcc;font-weight:600}
+.chip.on{background:var(--sun);box-shadow:0 4px 0 #d89a10}
+.chip input{width:11ch;border:0;background:transparent;font:inherit;color:inherit;font-size:16px}
+.islands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:18px}
+.isl{position:relative;text-align:left;border-radius:46% 54% 40% 60%/55% 45% 55% 45%;background:var(--sand);padding:34px 26px 28px;box-shadow:0 10px 0 #e6cf9c,0 18px 30px #0004;transition:transform .15s}
+.isl:hover{transform:translateY(-3px) rotate(-1deg)}
+.isl .ico{font-size:52px;line-height:1}
+.isl b{display:block;font-size:24px;margin-top:6px}
+.isl small{display:block;color:#6b5f4a;font-size:15px;font-weight:500}
+.isl .stars{margin-top:8px;font-size:16px;font-weight:600;color:#a06b00}
+.bar{height:10px;border-radius:9px;background:#efe2c2;margin-top:6px;overflow:hidden}.bar i{display:block;height:100%;background:var(--ok)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.btn{color:var(--ink);min-height:52px;padding:10px 22px;border-radius:18px;background:#fff;font-weight:700;font-size:19px;box-shadow:0 5px 0 #0002}
+.btn.big{background:var(--sun);box-shadow:0 6px 0 #d89a10;font-size:22px}
+.btn.go{background:var(--ok);color:#fff;box-shadow:0 6px 0 #178a46}
+.btn.sm{min-height:44px;font-size:16px;padding:8px 16px}
+/* juego */
+.bartop{display:flex;align-items:center;gap:10px;color:#fff}
+.dots{display:flex;gap:5px;flex-wrap:wrap;flex:1}.dots i{width:14px;height:14px;border-radius:50%;background:#ffffff55}.dots i.d{background:#fff}.dots i.s{background:var(--sun)}.dots i.c{outline:3px solid #fff}
+.card{background:var(--card);border-radius:28px;padding:22px clamp(16px,3vw,30px) 26px;box-shadow:0 10px 0 #0002;margin-top:14px}
+.q{display:flex;gap:12px;align-items:flex-start}
+.q p{margin:0;font-size:clamp(22px,3.6vw,28px);font-weight:600;line-height:1.25;text-wrap:balance}
+.say{flex:none;width:52px;height:52px;border-radius:50%;background:var(--sea);color:#fff;font-size:26px;box-shadow:0 4px 0 var(--sea2)}
+.vis{display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:12px;margin:18px 0 6px;font-size:40px}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:16px}
+.opt{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;min-height:96px;padding:14px 10px 12px;border-radius:22px;background:#fff;border:4px solid var(--line);font-size:24px;font-weight:600;text-align:center;box-shadow:0 5px 0 var(--line)}
+.opt .k{position:absolute;top:6px;left:10px;font-size:15px;color:#9a8c70}
+.opt:hover{border-color:var(--sea)}
+.opt:disabled{opacity:.35;cursor:default;text-decoration:line-through}
+.opt .e{font-size:44px;line-height:1}
+.opts.txt .opt{font-size:20px;min-height:78px}
+@media(max-width:600px){.opts{grid-template-columns:1fr}.opt{min-height:70px;flex-direction:row}.islands{grid-template-columns:1fr}.vis{font-size:32px}}
+/* dibujos */
+.row{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.ten{display:grid;grid-template-columns:repeat(5,22px);gap:4px;padding:6px;border:2px solid #b9ad94;border-radius:8px;background:#fff}
+.ten i{width:22px;height:22px;border-radius:50%;border:2px solid #776b55}.ten i.f{background:#776b55}
+.tower{display:flex;flex-direction:column-reverse;gap:2px}.tower i{width:26px;height:16px;border-radius:3px;background:#7aa8e8;border:2px solid #3d6fb8}
+.ncards{display:flex;gap:6px}.ncards b{display:grid;place-items:center;width:46px;height:52px;border-radius:10px;background:#eef3f5;border:2px solid #9fb2ba;font-size:24px}
+.bond{display:grid;grid-template-columns:auto auto;gap:10px 18px;justify-items:center;font-size:24px}.bond b{display:grid;place-items:center;min-width:48px;height:44px;padding:0 6px;border-radius:12px;border:3px solid #9fb2ba;background:#fff}.bond .t{grid-column:1/3}
+.blocks{display:flex;gap:10px;align-items:flex-end}.tenbar{display:flex}.tenbar i,.ones i{width:16px;height:16px;background:#ffb547;border:2px solid #b97400;margin-right:-2px}.ones{display:flex;gap:4px}
+table.t{border-collapse:collapse;font-size:18px;background:#fff}table.t th,table.t td{border:2px solid #b9ad94;padding:6px 12px;text-align:left}table.t td.n{text-align:right}table.t caption{font-weight:700;padding-bottom:4px}
+.picto td:last-child{font-size:28px;letter-spacing:2px}
+.who{display:flex;gap:10px;justify-content:center}.who span{display:grid;justify-items:center;font-size:44px}.who small{font-size:15px}
+.track{display:flex;gap:2px;flex-wrap:wrap;justify-content:center}.track span{display:grid;place-items:center;width:34px;height:40px;background:#e9e3d2;border-radius:6px;font-size:16px;position:relative}.track span.me{background:var(--sun)}.track span.me::before{content:"🧍‍♀️";position:absolute;top:-38px;font-size:30px}
+.track{margin-top:36px}
+.du{border-collapse:collapse;font-size:17px;background:#fff}.du td{border:2px solid #b9ad94;width:30px;height:28px;text-align:center}.du tr:last-child td{border-top:4px solid #555}
+/* reacción */
+#react{position:fixed;inset:0;z-index:20;background:#25203aee;display:grid;place-items:center;padding:16px}
+.rbox{width:min(560px,100%);max-height:100%;overflow:auto;background:var(--card);border-radius:28px;padding:18px;text-align:center;box-shadow:0 20px 50px #0008}
+.media{display:grid;place-items:center;min-height:220px;border-radius:18px;background:#000;overflow:hidden}
+.media video,.media img{max-width:100%;max-height:52vh;display:block}
+.fallback{font-size:120px;line-height:1;animation:hop .5s ease-in-out infinite alternate}.media.fb{background:#fff4dc}
+.fallback.no{animation:wob .25s ease-in-out infinite alternate}
+@keyframes hop{to{transform:translateY(-18px) scale(1.08)}}@keyframes wob{from{transform:rotate(-8deg)}to{transform:rotate(8deg)}}
+.verdict{display:flex;align-items:center;justify-content:center;gap:12px;font-size:clamp(48px,11vw,72px);font-weight:700;line-height:1;margin:6px 0 10px;animation:pop .35s cubic-bezier(.3,1.6,.5,1)}
+.verdict.ok{color:var(--ok)}.verdict.no{color:var(--bad)}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+.why{display:flex;gap:10px;align-items:flex-start;text-align:left;background:#fff;border:3px solid var(--line);border-radius:18px;padding:12px 14px;font:800 19px/1.4 "Nunito",sans-serif}
+.why .say{width:44px;height:44px;font-size:22px}
+.ract{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+.skip{margin-top:8px;color:#7a7060;font-size:16px;min-height:44px;padding:0 14px}
+/* memes */
+.mm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:14px}
+.mm section{background:var(--card);border-radius:24px;padding:16px}
+.mm h2{margin:0 0 8px;font-size:26px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:10px}
+.th{position:relative;border-radius:12px;overflow:hidden;background:#000;aspect-ratio:1}.th video,.th img{width:100%;height:100%;object-fit:cover}
+.th button{position:absolute;top:4px;right:4px;width:36px;height:36px;border-radius:50%;background:#fff;font-size:18px}
+.help{background:#ffffffdd;border-radius:20px;padding:14px 18px;font:700 16px/1.5 "Nunito",sans-serif;margin-top:16px}
+.help ol{margin:6px 0 0;padding-left:20px}
+@media(max-width:600px){.mm{grid-template-columns:1fr}}
+.done{text-align:center}.done .bigico{font-size:80px}
+
+/* tablet: todo más grande y la tarjeta ocupa la pantalla */
+@media (min-width:700px) and (min-height:700px){
+ .wrap{max-width:1100px}
+ h1{font-size:60px}.sub{font-size:22px}
+ .chip{min-height:58px;font-size:20px}
+ .isl{padding:44px 32px 36px}.isl .ico{font-size:66px}.isl b{font-size:30px}.isl small{font-size:18px}
+ .btn{min-height:60px;font-size:22px}
+ #game .card{min-height:calc(100vh - 110px);display:flex;flex-direction:column;justify-content:center}
+ .q p{font-size:38px}.say{width:64px;height:64px;font-size:32px}
+ .vis{zoom:1.4;margin:22px 0 10px}
+ .opts{gap:20px;margin-top:26px}
+ .opt{min-height:150px;font-size:40px;border-radius:28px}.opt .k{font-size:20px}.opt .e{font-size:62px}
+ .opt>:not(.k){zoom:1.25}.opt .e{zoom:1}
+ .opts.txt .opt{font-size:26px;min-height:120px}.opts.txt .opt>:not(.k){zoom:1}
+ .rbox{width:min(760px,100%)}.media video,.media img{max-height:58vh}
+ .verdict{font-size:90px}.why{font-size:24px;padding:16px 18px}
+}
+@media (min-width:700px) and (min-height:700px) and (orientation:portrait){
+ .islands{gap:26px}.isl{min-height:30vh;display:flex;flex-direction:column;justify-content:center}
+ .opts{grid-template-columns:1fr}.opt{min-height:120px;flex-direction:row;gap:20px}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section id="home">
+    <h1>Islas de los Números</h1>
+    <p class="sub">Elige quién juega y visita una isla. ¡Cada isla tiene 15 desafíos!</p>
+    <div class="top" id="players"></div>
+    <div class="islands" id="islands"></div>
+    <div class="tools">
+      <button class="btn" id="toMemes" type="button">🎬 Mis memes</button>
+      <button class="btn" id="voiceBtn" type="button">🔊 Leer en voz alta: sí</button>
+    </div>
+  </section>
+
+  <section id="game" hidden>
+    <div class="bartop"><button class="btn sm" id="back" type="button">⬅ Mapa</button><div class="dots" id="dots"></div><b id="score"></b></div>
+    <div class="card">
+      <div class="q"><button class="say" id="sayQ" type="button" aria-label="Escuchar la pregunta">🔊</button><p id="qText"></p></div>
+      <div class="vis" id="qVis"></div>
+      <div class="opts" id="opts"></div>
+    </div>
+  </section>
+
+  <section id="end" hidden>
+    <div class="card done">
+      <div class="bigico" id="endIco">🏝️</div>
+      <h2 id="endTitle" style="font-size:34px;margin:6px 0"></h2>
+      <p id="endText" style="font-size:20px"></p>
+      <div class="ract"><button class="btn go" id="redo" type="button">🔁 Repasar las que fallé</button><button class="btn big" id="endHome" type="button">🗺️ Volver al mapa</button></div>
+    </div>
+  </section>
+
+  <section id="memes" hidden>
+    <div class="top"><button class="btn sm" id="memesBack" type="button">⬅ Volver</button></div>
+    <h1>Mis memes</h1>
+    <p class="sub">El juego ya trae memes. Aquí puedes agregar más videos o GIF.</p>
+    <div class="mm">
+      <section><h2>👍 Para BIEN</h2><label class="btn go" style="display:inline-flex;align-items:center">➕ Agregar<input type="file" accept="video/*,image/*" multiple hidden data-kind="bien"></label><div class="thumbs" id="th-bien"></div></section>
+      <section><h2>👎 Para MAL</h2><label class="btn" style="display:inline-flex;align-items:center;background:var(--coral);color:#fff">➕ Agregar<input type="file" accept="video/*,image/*" multiple hidden data-kind="mal"></label><div class="thumbs" id="th-mal"></div></section>
+    </div>
+    <div class="help"><b>Cómo guardar un video de TikTok:</b>
+      <ol><li>En la app de TikTok, abre el video y toca <b>Compartir</b> › <b>Guardar video</b> (si el creador lo permite).</li>
+      <li>Vuelve aquí y toca <b>➕ Agregar</b> en la lista que corresponda.</li>
+      <li>Los memes quedan guardados solo en este dispositivo. Si juegan en otra tablet, agrégalos allá también.</li></ol>
+      El juego ya trae 19 memes de BIEN y 17 de MAL, y los muestra al azar sin repetir hasta que salgan todos. Los que agregues aquí se suman a esos.</div>
+  </section>
+</main>
+
+<div id="react" hidden>
+  <div class="rbox">
+    <div class="media" id="media"></div>
+    <button class="skip" id="skip" type="button">Saltar ⏭</button>
+    <div id="after" hidden>
+      <div class="verdict" id="verdict"></div>
+      <div class="why"><button class="say" id="sayWhy" type="button" aria-label="Escuchar la explicación">🔊</button><div id="whyText"></div></div>
+      <div class="ract" id="ract"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+{
+const $ = id => document.getElementById(id);
+// ---------- dibujos
+const E = (e, n) => `<span class="row">${Array(n).fill(e).join("")}</span>`;
+const frame = n => `<div class="ten">${Array.from({length:10},(_, i) => `<i class="${i < n ? "f" : ""}"></i>`).join("")}</div>`;
+const tower = n => `<div class="tower">${"<i></i>".repeat(n)}</div>`;
+const cards = a => `<div class="ncards">${a.map(x => `<b>${x}</b>`).join("")}</div>`;
+const bond = (t, l, r) => `<div class="bond"><b class="t">${t}</b><b>${l}</b><b>${r}</b></div>`;
+const blocks = (d, u) => `<div class="blocks">${`<div class="tenbar">${"<i></i>".repeat(10)}</div>`.repeat(d)}<div class="ones">${"<i></i>".repeat(u)}</div></div>`;
+const pie = f => { const a = f * 2 * Math.PI, x = 20 + 16 * Math.sin(a), y = 20 - 16 * Math.cos(a);
+  const p = f <= 0 ? "" : `<path d="M20 20 L20 4 A16 16 0 ${f > .5 ? 1 : 0} 1 ${x.toFixed(1)} ${y.toFixed(1)} Z" fill="#776b55"/>`;
+  return `<svg width="44" height="44" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="#fff" stroke="#776b55" stroke-width="2.5"/>${p}</svg>` };
+const box = s => `<svg width="${60*s}" height="${56*s}" viewBox="0 0 60 56"><path d="M6 18 L30 6 L54 18 L54 44 L30 54 L6 44Z" fill="#c9965a" stroke="#6b4a26" stroke-width="2"/><path d="M6 18 L30 30 L54 18 M30 30 V54" fill="none" stroke="#6b4a26" stroke-width="2"/><path d="M18 12 L42 24" stroke="#e8c48c" stroke-width="5"/></svg>`;
+const balance = (l, r) => { const tilt = l === r ? 0 : l > r ? -8 : 8;
+  const dots = (n, cx) => Array.from({length:n},(_, i) => `<circle cx="${cx - 18 + (i % 3) * 18}" cy="${-10 - Math.floor(i / 3) * 17}" r="8" fill="#ff8a3d" stroke="#a54b10" stroke-width="2"/>`).join("");
+  return `<svg width="260" height="150" viewBox="-130 -110 260 150"><path d="M-12 36 L12 36 L0 0Z" fill="#555"/><g transform="rotate(${tilt})"><rect x="-110" y="-3" width="220" height="6" rx="3" fill="#555"/>
+  <path d="M-110 0 h60 l-6 10 h-48z" fill="#999"/><path d="M50 0 h60 l-6 10 h-48z" fill="#999"/>${dots(l, -80)}${dots(r, 80)}
+  <text x="-80" y="28" text-anchor="middle" font-size="18" font-weight="700" fill="#25203a">${l}</text><text x="80" y="28" text-anchor="middle" font-size="18" font-weight="700" fill="#25203a">${r}</text></g></svg>` };
+const strings = ws => `<div style="display:grid;gap:12px;width:100%;max-width:420px">${ws.map((w, i) => `<div style="display:flex;align-items:center;gap:10px;font-size:20px"><b style="width:22px">${"ABC"[i]}</b><span style="height:10px;border-radius:6px;width:${w}%;background:repeating-linear-gradient(90deg,#b0732c 0 6px,#d9a35b 6px 12px)"></span></div>`).join("")}</div>`;
+const tally = `<table class="t"><caption>Pasatiempo preferido de 1° básico</caption><tr><th>Pasatiempo</th><th>Conteo</th><th>Total</th></tr><tr><td>⚽ Deporte</td><td>/////// </td><td class="n">7</td></tr><tr><td>📚 Lectura</td><td>////</td><td class="n">4</td></tr><tr><td>✂️ Manualidades</td><td>////////</td><td class="n">8</td></tr></table>`;
+const animals = `<table class="t picto"><caption>Animales</caption><tr><td>Perro</td><td>${"🐶".repeat(3)}</td></tr><tr><td>Gato</td><td>${"🐱".repeat(2)}</td></tr><tr><td>Pájaro</td><td>${"🐦".repeat(5)}</td></tr><tr><td colspan="2" style="font-size:16px">Clave: cada dibujo = 1 animal</td></tr></table>`;
+const glasses = `<table class="t picto"><caption>Estudiantes que usan lentes en 1° básico</caption><tr><td>Niñas</td><td>${"👓".repeat(6)}</td></tr><tr><td>Niños</td><td>${"👓".repeat(7)}</td></tr></table>`;
+const track = s => `<div class="track">${Array.from({length:11},(_, i) => `<span class="${i === s ? "me" : ""}">${i}</span>`).join("")}</div>`;
+const du = (d, u) => `<table class="du"><tr><td>D</td><td>U</td></tr><tr><td>1</td><td>7</td></tr><tr><td>1</td><td>2</td></tr><tr><td>${d}</td><td>${u}</td></tr></table>`;
+const svg3d = k => ({
+  cil:`<svg width="70" height="80" viewBox="0 0 70 80"><ellipse cx="35" cy="66" rx="28" ry="9" fill="#cfe3f5" stroke="#345" stroke-width="2"/><rect x="7" y="14" width="56" height="52" fill="#cfe3f5"/><path d="M7 14 V66 M63 14 V66" stroke="#345" stroke-width="2"/><ellipse cx="35" cy="14" rx="28" ry="9" fill="#e7f1fb" stroke="#345" stroke-width="2"/></svg>`,
+  cono:`<svg width="70" height="80" viewBox="0 0 70 80"><path d="M35 6 L7 66 A28 9 0 0 0 63 66Z" fill="#cfe3f5" stroke="#345" stroke-width="2"/><ellipse cx="35" cy="66" rx="28" ry="9" fill="#e7f1fb" stroke="#345" stroke-width="2"/></svg>`,
+  cubo:`<svg width="70" height="80" viewBox="0 0 70 80"><path d="M10 26 L46 26 L46 70 L10 70Z" fill="#cfe3f5" stroke="#345" stroke-width="2"/><path d="M10 26 L24 12 L60 12 L46 26Z" fill="#e7f1fb" stroke="#345" stroke-width="2"/><path d="M46 26 L60 12 L60 56 L46 70Z" fill="#b6d1ea" stroke="#345" stroke-width="2"/></svg>`,
+  luna:`<svg width="70" height="70" viewBox="0 0 70 70"><path d="M44 8 A28 28 0 1 0 44 62 A22 22 0 1 1 44 8Z" fill="none" stroke="#345" stroke-width="3"/></svg>`,
+  rayo:`<svg width="70" height="70" viewBox="0 0 70 70"><path d="M24 4 L46 4 L36 26 L54 26 L18 66 L28 36 L12 36Z" fill="none" stroke="#345" stroke-width="3" stroke-linejoin="round"/></svg>`,
+  equis:`<svg width="70" height="70" viewBox="0 0 70 70"><path d="M8 8 L62 62 M62 8 L8 62" stroke="#345" stroke-width="3"/></svg>`,
+  bandera:`<svg width="150" height="110" viewBox="0 0 150 110"><path d="M10 20 C45 0 80 40 140 14 L140 90 C80 116 45 76 10 96Z" fill="#d6d6dc" stroke="#345" stroke-width="3"/></svg>`,
+  pedro:`<svg width="120" height="130" viewBox="0 0 120 130"><circle cx="60" cy="28" r="20" fill="#f3c9a5" stroke="#345" stroke-width="2"/><circle cx="53" cy="26" r="2.5" fill="#345"/><circle cx="67" cy="26" r="2.5" fill="#345"/><path d="M52 36 Q60 42 68 36" fill="none" stroke="#345" stroke-width="2"/><rect x="40" y="50" width="40" height="44" rx="10" fill="#7aa8e8" stroke="#345" stroke-width="2"/><path d="M40 58 L20 84 M80 58 L100 84" stroke="#f3c9a5" stroke-width="9" stroke-linecap="round"/><circle cx="104" cy="94" r="13" fill="#fff" stroke="#345" stroke-width="2"/><path d="M95 88 L113 100 M104 81 V107" stroke="#345" stroke-width="1.5"/><path d="M50 94 V124 M70 94 V124" stroke="#345" stroke-width="9" stroke-linecap="round"/></svg>`
+})[k];
+const opt = (e, label) => ({ h: `<span class="e">${e}</span>${label ? `<span>${label}</span>` : ""}`, say: label || "" });
+
+// ---------- las 60 preguntas (texto, dibujo, alternativas, correcta, por qué está bien, por qué cada error)
+const U = [
+{ name:"Isla de los Números", ico:"🐚", sub:"Números hasta 10, orden y patrones", qs:[
+ {q:"¿Cómo se escribe con palabras el número 3?", v:`<span style="font-size:70px;font-weight:700">3</span>`, o:["Dos","Tres","Cinco"], a:1, ok:"El 3 se escribe «tres»: uno, dos, ¡tres!", no:{0:"«Dos» es el número 2. Le falta uno para llegar a 3.",2:"«Cinco» es el número 5, que es más que 3."}},
+ {q:"¿En qué cuadro se representó el 5?", o:[{h:frame(5)},{h:frame(4)},{h:frame(6)}], a:0, ok:"Hay 5 círculos pintados: 1, 2, 3, 4, 5.", no:{1:"Cuenta los pintados: hay 4. Le falta uno para ser 5.",2:"Ahí hay 6 pintados: uno de más."}},
+ {q:"Cuenta las estrellas. ¿Cuántas hay?", v:`<div>${E("⭐",5)}${E("⭐",5)}</div>`, o:["2","5","10"], a:2, ok:"Hay dos filas de 5 estrellas: 5 y 5 son 10.", no:{0:"Hay muchas más que 2. Tócalas con el dedo mientras cuentas.",1:"5 es solo una fila. Son dos filas de 5: ¡10!"}},
+ {q:"¿Qué torre tiene menos de 8 cubos?", o:[{h:tower(6)},{h:tower(10)},{h:tower(8)}], a:0, ok:"La torre de 6 cubos es la más baja: 6 es menor que 8.", no:{1:"Esta tiene 10 cubos: 10 es mayor que 8.",2:"Esta tiene 8 cubos: es igual a 8, no menor."}},
+ {q:"¿En qué opción están ordenados de mayor a menor?", v:cards([2,9,6]), o:[{h:cards([9,6,2])},{h:cards([2,6,9])},{h:cards([2,9,6])}], a:0, ok:"De mayor a menor: primero el más grande, 9, después 6 y al final 2.", no:{1:"Esa está de menor a mayor: justo al revés.",2:"Esa está desordenada: el 9 está en el medio."}},
+ {q:"Si el gato está en 1° lugar, ¿quién está en 5° lugar?", v:`<div class="row" style="font-size:44px">🐱🐶🐰🦊🐼🐸</div>`, o:[opt("🦊","Zorro"),opt("🐼","Panda"),opt("🐸","Rana")], a:1, ok:"Contamos: 1° gato, 2° perro, 3° conejo, 4° zorro y 5° ¡panda!", no:{0:"El zorro está en 4° lugar. Te falta contar uno más.",2:"La rana está en 6° lugar. Te pasaste uno."}},
+ {q:"Felipe pasó a cuarto básico. ¿En qué curso iba antes?", v:"🎒", o:["Quinto","Décimo","Tercero"], a:2, ok:"Antes del 4 viene el 3. El 3 es el antecesor del 4: iba en tercero.", no:{0:"Quinto viene después de cuarto, no antes.",1:"Décimo está mucho más adelante."}},
+ {q:"¿Qué descomposición del 7 es correcta?", o:[{h:bond(7,9,2)},{h:bond(7,2,5)},{h:bond(7,1,8)}], a:1, ok:"2 + 5 = 7. Las dos partes juntas forman el 7.", no:{0:"9 + 2 = 11, no 7. Además 9 es más grande que 7.",2:"1 + 8 = 9, no 7."}},
+ {q:"¿Cómo se puede descomponer el 4?", v:"🍓🍓🍓🍓", o:["4 y 2","2 y 2","1 y 2"], a:1, ok:"2 + 2 = 4. Dos y dos forman cuatro.", no:{0:"4 + 2 = 6. Sobran 2.",2:"1 + 2 = 3. Falta 1."}},
+ {q:"¿En qué opción hay una decena de manzanas?", o:[{h:E("🍎",10)},{h:E("🍎",9)},{h:E("🍎",8)}], a:0, ok:"Una decena son 10. Aquí hay 10 manzanas.", no:{1:"Aquí hay 9 manzanas: falta 1 para la decena.",2:"Aquí hay 8 manzanas: faltan 2 para la decena."}},
+ {q:"¿Cuántos cubos faltan para completar una decena?", v:tower(6), o:["1","4","10"], a:1, ok:"Hay 6 cubos. Contamos desde 6 hasta 10: 7, 8, 9, 10. ¡Faltan 4!", no:{0:"Con 1 más tendrías 7, no 10.",2:"10 es la decena completa, pero ya tienes 6 cubos."}},
+ {q:"¿Qué grupo se repite en esta secuencia?", v:`<div class="row">😎🤩🤩😎🤩🤩😎…</div>`, o:[{h:`<span class="e">😎🤩</span>`},{h:`<span class="e">😎🤩😎</span>`},{h:`<span class="e">😎🤩🤩</span>`}], a:2, ok:"Se repite 😎 🤩 🤩, 😎 🤩 🤩… un lentes y dos estrellas.", no:{0:"Mira bien: después de 😎 vienen dos 🤩, no una.",1:"Después de 😎 vienen dos 🤩 antes del siguiente 😎."}},
+ {q:"¿Qué figura sigue en la secuencia?", v:`<div class="row">${[0,.25,.75,0,.25,.75,0,.25].map(pie).join("")}<span style="font-size:28px">…</span></div>`, o:[{h:pie(0)},{h:pie(.25)},{h:pie(.75)}], a:2, ok:"El patrón es: vacío, un poquito, casi lleno. Después del poquito viene el casi lleno.", no:{0:"El vacío viene después del casi lleno, no ahora.",1:"El poquito ya está al final; ahora toca el casi lleno."}},
+ {q:"¿En cuál de estas actividades demoras más?", o:[opt("😴","Dormir toda la noche"),opt("🪥","Lavarse los dientes"),opt("🎵","Escuchar una canción")], a:0, ok:"Dormir dura toda la noche: ¡muchas horas!", no:{1:"Lavarse los dientes toma unos pocos minutos.",2:"Una canción dura unos 3 minutos."}},
+ {q:"Si hoy fuera miércoles, ¿qué día sería mañana?", v:"📅", o:["Lunes","Martes","Jueves"], a:2, ok:"Lunes, martes, miércoles, ¡jueves! Mañana es el día que viene después.", no:{0:"El lunes ya pasó: es antes del miércoles.",1:"Si hoy es miércoles, el martes fue ayer."}}
+]},
+{ name:"Isla del 20", ico:"🦀", sub:"Números hasta 20, contar de a varios y cuerpos", qs:[
+ {q:"Observa los bloques. ¿Qué número se representó?", v:blocks(1,8), o:["10","11","18"], a:2, ok:"Una barra de 10 y 8 cubitos sueltos: 10 + 8 = 18.", no:{0:"10 es solo la barra. Faltan los 8 cubitos sueltos.",1:"Cuenta los cubitos sueltos: son 8, no 1."}},
+ {q:"Eduardo cuenta así: 3, 6, 9, 12, 15… ¿De cuánto en cuánto cuenta?", v:"🧒💬", o:["De 1 en 1","De 3 en 3","De 6 en 6"], a:1, ok:"Cada vez suma 3: 3, 6, 9, 12, 15.", no:{0:"De 1 en 1 sería 3, 4, 5, 6…",2:"De 6 en 6 sería 3, 9, 15…"}},
+ {q:"¿Cuántos huevos hay en total?", v:`<div class="row" style="gap:18px">${"<span>🧺<br>🥚🥚</span>".repeat(4)}</div>`, o:["2","4","8"], a:2, ok:"4 canastos con 2 huevos cada uno: 2, 4, 6, 8.", no:{0:"2 son los huevos de un solo canasto.",1:"4 son los canastos, no los huevos."}},
+ {q:"¿Qué número es mayor?", o:["2","9","11"], a:2, ok:"11 tiene una decena y una unidad: es el mayor.", no:{0:"2 es el menor de todos.",1:"9 es menor que 11: le faltan 2."}},
+ {q:"¿En qué opción están ordenados de menor a mayor?", v:cards([10,15,8,17]), o:[{h:cards([8,10,15,17])},{h:cards([8,10,17,15])},{h:cards([17,15,10,8])}], a:0, ok:"Del más chico al más grande: 8, 10, 15, 17.", no:{1:"17 es mayor que 15, así que va al final.",2:"Esa está de mayor a menor: al revés."}},
+ {q:"En esta caja caben 8 cosas. ¿En qué caja caben 12?", v:box(1), o:[{h:box(1.4)},{h:box(.7)},{h:box(1)}], a:0, ok:"12 es más que 8, así que necesita una caja más grande.", no:{1:"Esa caja es más pequeña: caben menos de 8.",2:"Esa caja es del mismo tamaño: caben 8."}},
+ {q:"¿En qué número el 1 vale 10?", o:["1","13","20"], a:1, ok:"En el 13, el 1 está en las decenas: vale 10. 13 es 10 + 3.", no:{0:"En el número 1 solo, el 1 vale una unidad.",2:"El 20 no tiene ningún 1."}},
+ {q:"¿Cuál es una descomposición correcta del 17?", o:[{h:bond(17,10,17)},{h:bond(17,7,9)},{h:bond(17,10,7)}], a:2, ok:"10 + 7 = 17: una decena y 7 unidades.", no:{0:"10 + 17 = 27, mucho más que 17.",1:"7 + 9 = 16, no 17."}},
+ {q:"¿Qué número forman juntos el 10 y el 2?", v:bond("?",10,2), o:["12","20","2"], a:0, ok:"10 + 2 = 12: una decena y 2 unidades.", no:{1:"20 serían dos decenas, y aquí hay una.",2:"2 es solo una de las partes."}},
+ {q:"¿Qué figura sigue en la secuencia?", v:`<div class="row">🧍🧎🤸🧍🧎🤸🧍…</div>`, o:[opt("🧍"),opt("🧎"),opt("🤸")], a:1, ok:"Se repite: de pie, de rodillas, voltereta. Después de 🧍 viene 🧎.", no:{0:"🧍 acaba de aparecer; ahora toca 🧎.",2:"🤸 viene después de 🧎, no antes."}},
+ {q:"¿Qué secuencia va restando 3?", o:["6, 5, 4, 3…","3, 6, 9, 12…","12, 9, 6, 3…"], a:2, ok:"12 menos 3 es 9, 9 menos 3 es 6, 6 menos 3 es 3.", no:{0:"Esa resta de 1 en 1.",1:"Esa suma 3 cada vez, no resta."}},
+ {q:"¿Qué número sigue? 5, 10, 15, …", o:["16","20","25"], a:1, ok:"Suma 5 cada vez: 15 + 5 = 20.", no:{0:"16 sería sumar solo 1.",2:"25 viene después del 20."}},
+ {q:"¿Qué objeto se parece a un triángulo?", o:[opt("🖼️","Cuadro"),opt("🕒","Reloj"),opt("🍕","Pizza")], a:2, ok:"El trozo de pizza tiene 3 lados y 3 puntas, como un triángulo.", no:{0:"El cuadro es un rectángulo: tiene 4 lados.",1:"El reloj es redondo, como un círculo."}},
+ {q:"¿A qué cuerpo geométrico se parece una lata?", v:"🥫", o:["Círculo","Cono","Cilindro"], a:2, ok:"La lata es un cilindro: tiene dos caras redondas y es alargada.", no:{0:"El círculo es plano (2D), no un cuerpo que ocupa espacio.",1:"El cono termina en punta, como un barquillo de helado."}},
+ {q:"¿Qué cuerpo tiene solo una cara redonda?", o:[{h:svg3d("cil"),say:"cilindro"},{h:svg3d("cono"),say:"cono"},{h:svg3d("cubo"),say:"cubo"}], a:1, ok:"El cono tiene una sola cara redonda abajo y una punta arriba.", no:{0:"El cilindro tiene dos caras redondas: arriba y abajo.",2:"El cubo tiene 6 caras cuadradas, ninguna redonda."}}
+]},
+{ name:"Isla de Sumas y Restas", ico:"🐢", sub:"Sumar, restar, medir y tablas", qs:[
+ {q:"Había 2 cachorros y llegaron 3 más. ¿Qué operación sirve para saber cuántos hay?", v:`<div>🐶🐶 <b>+</b> 🐶🐶🐶</div>`, o:["2 + 2","2 + 3","2 + 5"], a:1, ok:"Juntamos los 2 que había con los 3 que llegaron: 2 + 3 = 5.", no:{0:"Llegaron 3 cachorros, no 2.",2:"5 es el total; los que llegaron fueron 3."}},
+ {q:"¿Qué operación muestra el dibujo?", v:`<div class="row">${"🟠".repeat(6)}${"❌".repeat(3)}</div>`, o:["6 + 3","6 − 3","9 − 3"], a:2, ok:"Había 9 círculos y se tacharon 3: 9 − 3 = 6.", no:{0:"Tachar es quitar, no juntar.",1:"Empezamos con 9 círculos en total, no con 6."}},
+ {q:"Estoy en el 3 y avanzo 4 espacios. ¿Qué operación sirve para saber dónde llego?", v:track(3), o:["3 + 4","3 + 7","4 + 7"], a:0, ok:"Parto en 3 y avanzo 4: 3 + 4 = 7.", no:{1:"7 es donde llego, no lo que avanzo.",2:"Parto en el 3, no en el 4."}},
+ {q:"¿Cuánto es 12 + 5?", o:["7","15","17"], a:2, ok:"Desde 12 avanzo 5: 13, 14, 15, 16, 17.", no:{0:"7 es 12 − 5: eso es restar.",1:"Avanzaste solo 3. Cuenta 5 pasos desde 12."}},
+ {q:"¿Cuánto es 18 − 2?", o:["16","17","20"], a:0, ok:"Desde 18 retrocedo 2: 17, 16.", no:{1:"Retrocediste solo 1 paso.",2:"20 es 18 + 2: eso es sumar."}},
+ {q:"14 + 3 = 17. ¿Cuál es la operación inversa?", o:["14 − 3","17 − 3","3 + 17"], a:1, ok:"La inversa deshace la suma: 17 − 3 = 14.", no:{0:"14 − 3 = 11: no vuelve al principio.",2:"Esa sigue siendo una suma."}},
+ {q:"Daniela cuenta: 9, 10, 11, 12, 13. ¿Qué operación resolvió?", v:"👧💭", o:["9 + 4","9 + 13","13 − 4"], a:0, ok:"Parte en 9 y avanza 4 pasos: 10, 11, 12, 13. Es 9 + 4.", no:{1:"No sumó 13; llegó al 13.",2:"Contó hacia adelante, así que es una suma."}},
+ {q:"¿Qué muestra la balanza?", v:balance(3,6), o:["3 es mayor que 6","3 es igual a 3","3 es menor que 6"], a:2, ok:"Baja el lado que pesa más: el 6. Entonces 3 es menor que 6.", no:{0:"El lado del 6 bajó: el 6 pesa más.",1:"Un lado tiene 3 y el otro 6: no son iguales."}},
+ {q:"¿Cuántas bolitas hay que agregar a la derecha para equilibrar la balanza?", v:balance(6,5), o:["1","5","11"], a:0, ok:"A la izquierda hay 6 y a la derecha 5. A 5 le falta 1 para ser 6.", no:{1:"Con 5 más tendrías 10: demasiadas.",2:"11 son todas las bolitas juntas."}},
+ {q:"¿Qué cuerda es la más corta?", v:strings([70,40,95]), o:["A","B","C"], a:1, ok:"La cuerda B llega menos lejos: es la más corta.", no:{0:"La A es más larga que la B.",2:"La C es la más larga de todas."}},
+ {q:"¿Cuál de estas medidas es la mayor?", o:[opt("📎","1 clip"),opt("📎","20 clips"),opt("📎","12 clips")], a:1, ok:"20 clips es más largo que 12 y que 1.", no:{0:"1 clip es la medida más corta.",2:"12 es menos que 20."}},
+ {q:"¿Cuántos estudiantes prefieren las manualidades?", v:tally, o:["7","8","18"], a:1, ok:"En la fila de manualidades hay 8 marcas: el total es 8.", no:{0:"7 son los que prefieren deporte.",2:"18 es mucho más que las marcas de esa fila."}},
+ {q:"Si cada estudiante eligió una vez, ¿cuántos estudiantes fueron en total?", v:tally, o:["8","10","19"], a:2, ok:"Sumamos las tres filas: 7 + 4 + 8 = 19.", no:{0:"8 son solo los de manualidades.",1:"Suma las tres filas: 7 + 4 + 8."}},
+ {q:"¿Cuál es el título del pictograma?", v:animals, o:["Animales","Cada dibujo = 1","Perro"], a:0, ok:"El título va arriba y dice de qué trata: «Animales».", no:{1:"Esa es la clave: dice cuánto vale cada dibujo.",2:"Perro es una de las filas, no el título."}},
+ {q:"¿De qué animal se vio más?", v:animals, o:[opt("🐶","Perro"),opt("🐱","Gato"),opt("🐦","Pájaro")], a:2, ok:"Pájaro tiene 5 dibujos: es la fila más larga.", no:{0:"Perro tiene solo 3.",1:"Gato tiene solo 2."}}
+]},
+{ name:"Isla de los Datos", ico:"🐙", sub:"Restas con decenas, dobles, líneas y pictogramas", qs:[
+ {q:"¿Qué operación sirve para saber cuántas manzanas más que sandías hay?", v:`<div>${E("🍎",9)}${E("🍉",7)}</div>`, o:["9 − 7","9 + 7","16 − 7"], a:0, ok:"Para saber cuántas más, se resta: 9 − 7 = 2. Hay 2 manzanas más.", no:{1:"Sumar daría el total de frutas, no cuántas más.",2:"16 no es ninguna de las cantidades."}},
+ {q:"¿En qué opción se resolvió bien 17 − 12?", o:[{h:du(2,9)},{h:du(0,5)},{h:du(1,5)}], a:1, ok:"Decenas: 1 − 1 = 0. Unidades: 7 − 2 = 5. El resultado es 5.", no:{0:"Ahí se sumó en vez de restar.",2:"Las decenas: 1 − 1 = 0, no 1."}},
+ {q:"Para sumar 6 + 13 separamos el 13 en ▢ y 3. ¿Qué número va en ▢?", o:["10","11","13"], a:0, ok:"13 es 10 + 3. Después: 6 + 3 = 9, y 10 + 9 = 19.", no:{1:"11 + 3 = 14, no 13.",2:"13 + 3 = 16, no 13."}},
+ {q:"4 + ▢ = 10. ¿Qué número va en ▢?", v:frame(4), o:["5","6","14"], a:1, ok:"Al 4 le faltan 6 para llegar a 10: 4 + 6 = 10.", no:{0:"4 + 5 = 9: falta 1.",2:"4 + 14 = 18: te pasas mucho."}},
+ {q:"¿Cuál es el doble de 7?", o:["2","12","14"], a:2, ok:"El doble es sumar el mismo número dos veces: 7 + 7 = 14.", no:{0:"El doble no es 2: es el 7 dos veces.",1:"12 es el doble de 6. El de 7 es 7 + 7."}},
+ {q:"María tiene 15 años. Sergio tiene 4 años menos que María. ¿Cuántos años tiene Sergio?", v:"👩🧑", o:["9","11","19"], a:1, ok:"«Menos» significa restar: 15 − 4 = 11.", no:{0:"15 − 6 = 9, pero son 4 años menos.",2:"19 es sumar; Sergio tiene menos años."}},
+ {q:"¿Qué problema se resuelve con 12 + 5?", o:["Había 12 aves y llegaron otras 5. ¿Cuántas hay ahora?","Había 12 aves y se fueron 5. ¿Cuántas quedaron?","Había 12 aves amarillas y 5 blancas. ¿Cuántas amarillas más?"], a:0, txt:true, ok:"«Llegaron otras 5» es agregar: 12 + 5 = 17.", no:{1:"«Se fueron» es quitar: eso se resuelve con 12 − 5.",2:"«Cuántas más» se resuelve restando: 12 − 5."}},
+ {q:"Observa la figura. ¿Qué es correcto?", v:svg3d("bandera"), o:["Tiene solo líneas curvas","Tiene solo líneas rectas","Tiene líneas rectas y curvas"], a:2, txt:true, ok:"Los costados son rectos y arriba y abajo son curvos: tiene de las dos.", no:{0:"Mira los costados: son rectos.",1:"Mira arriba y abajo: son curvos."}},
+ {q:"¿Cuál es una línea recta cerrada?", o:[{h:svg3d("luna"),say:"luna"},{h:svg3d("rayo"),say:"rayo"},{h:svg3d("equis"),say:"equis"}], a:1, ok:"El rayo está hecho solo de rectas y se cierra: no tiene puntas sueltas.", no:{0:"La luna tiene líneas curvas.",2:"La X tiene puntas sueltas: es abierta."}},
+ {q:"¿Quién está entre Tomás y Pedro?", v:`<div class="who"><span>👦<small>Tomás</small></span><span>👧<small>Sofía</small></span><span>🧒<small>Pedro</small></span><span>👩<small>Ana</small></span></div>`, o:[opt("👩","Ana"),opt("👧","Sofía"),opt("🧒","Pedro")], a:1, ok:"Sofía está en el medio, entre Tomás y Pedro.", no:{0:"Ana está al final, al lado de Pedro.",2:"Pedro es uno de los dos de los lados."}},
+ {q:"Pedro te está mirando. ¿En qué mano tiene la pelota?", v:svg3d("pedro"), o:["Arriba de su cabeza","En su mano derecha","En su mano izquierda"], a:2, txt:true, ok:"Pedro te mira de frente, así que su izquierda queda a tu derecha. ¡La pelota está en su mano izquierda!", no:{0:"La pelota está en su mano, no arriba.",1:"Cuando alguien te mira, su derecha queda a tu izquierda. Mira de nuevo."}},
+ {q:"¿Qué información entrega el pictograma?", v:glasses, o:["Los que NO usan lentes","Los lentes preferidos","Los que SÍ usan lentes"], a:2, txt:true, ok:"El título lo dice: estudiantes que usan lentes en 1° básico.", no:{0:"El título dice que usan lentes, no que no usan.",1:"No habla de lentes preferidos, solo de quiénes los usan."}},
+ {q:"¿Qué le falta al pictograma?", v:glasses, o:["El símbolo","La escala (cuánto vale cada 👓)","El título"], a:1, txt:true, ok:"No dice cuánto vale cada 👓: le falta la escala, también llamada clave.", no:{0:"Sí tiene símbolo: los 👓.",2:"El título está arriba de la tabla."}},
+ {q:"¿Qué es correcto según el pictograma?", v:glasses, o:["Más niñas que niños usan lentes","Más niños que niñas usan lentes","Prefieren los lentes negros"], a:1, txt:true, ok:"Niños tiene 7 y niñas 6: hay más niños.", no:{0:"Niñas tiene 6, menos que los 7 niños.",2:"El pictograma no dice nada de colores."}},
+ {q:"Si cada 👓 es 1 estudiante, ¿cuántos usan lentes en total?", v:glasses, o:["6","7","13"], a:2, ok:"6 niñas + 7 niños = 13 estudiantes.", no:{0:"6 son solo las niñas.",1:"7 son solo los niños."}}
+]}];
+
+// ---------- guardado
+const store = { get(k, d) { try { const v = localStorage.getItem("islas." + k); return v ? JSON.parse(v) : d } catch (e) { return d } },
+                set(k, v) { try { localStorage.setItem("islas." + k, JSON.stringify(v)) } catch (e) {} } };
+let players = store.get("players", ["Jugadora 1", "Jugadora 2"]), who = store.get("who", 0), voice = store.get("voice", true);
+const prog = () => store.get("p" + who, {});
+const saveProg = p => store.set("p" + who, p);
+
+// ---------- voz
+const clean = t => String(t).replace(/<[^>]+>/g, " ").replace(/[\p{Extended_Pictographic}️‍]/gu, " ").replace(/−/g, " menos ").replace(/\+/g, " más ").replace(/=/g, " es igual a ").replace(/▢/g, " cuadrito ").replace(/°/g, "°").replace(/\s+/g, " ").trim();
+function speak(t) { try { if (!voice || !window.speechSynthesis) return; speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(clean(t)); u.lang = "es-CL"; u.rate = .92;
+  const v = speechSynthesis.getVoices().find(v => /^es/i.test(v.lang)); if (v) u.voice = v; speechSynthesis.speak(u) } catch (e) {} }
+
+// ---------- memes en IndexedDB
+let db = null;
+function openDB() { return new Promise(res => { try { const r = indexedDB.open("islas-memes", 1);
+  r.onupgradeneeded = () => r.result.createObjectStore("m", { keyPath: "id", autoIncrement: true });
+  r.onsuccess = () => { db = r.result; res(db) }; r.onerror = () => res(null) } catch (e) { res(null) } }) }
+function allMemes() { return new Promise(res => { if (!db) return res([]); try { const r = db.transaction("m").objectStore("m").getAll(); r.onsuccess = () => res(r.result || []); r.onerror = () => res([]) } catch (e) { res([]) } }) }
+function addMeme(kind, file) { return new Promise(res => { if (!db) return res(); const tx = db.transaction("m", "readwrite"); tx.objectStore("m").add({ kind, blob: file, type: file.type }); tx.oncomplete = res; tx.onerror = res }) }
+function delMeme(id) { return new Promise(res => { if (!db) return res(); const tx = db.transaction("m", "readwrite"); tx.objectStore("m").delete(id); tx.oncomplete = res; tx.onerror = res }) }
+// memes incluidos (carpeta memes/) + los que se agreguen en «Mis memes»
+const BUILTIN = {"bien": ["memes/bien/bien01.mp4", "memes/bien/bien02.mp4", "memes/bien/bien03.mp4", "memes/bien/bien04.mp4", "memes/bien/bien05.mp4", "memes/bien/bien06.mp4", "memes/bien/bien07.mp4", "memes/bien/bien08.mp4", "memes/bien/bien09.mp4", "memes/bien/bien10.mp4", "memes/bien/bien11.mp4", "memes/bien/bien12.mp4", "memes/bien/bien13.mp4", "memes/bien/bien14.mp4", "memes/bien/bien15.mp4", "memes/bien/bien16.mp4", "memes/bien/bien17.mp4", "memes/bien/bien18.mp4", "memes/bien/bien19.mp4"], "mal": ["memes/mal/mal01.mp4", "memes/mal/mal02.mp4", "memes/mal/mal03.mp4", "memes/mal/mal04.mp4", "memes/mal/mal05.mp4", "memes/mal/mal06.mp4", "memes/mal/mal07.mp4", "memes/mal/mal08.mp4", "memes/mal/mal09.mp4", "memes/mal/mal10.mp4", "memes/mal/mal11.mp4", "memes/mal/mal12.mp4", "memes/mal/mal13.mp4", "memes/mal/mal14.mp4", "memes/mal/mal15.mp4", "memes/mal/mal16.mp4", "memes/mal/mal17.mp4"]};
+const bag = { bien: [], mal: [] }, lastShown = { bien: null, mal: null };
+async function pickMeme(kind) {
+  const mine = (await allMemes()).filter(m => m.kind === kind).map(m => ({ key: "db" + m.id, m }));
+  const pool = BUILTIN[kind].map(src => ({ key: src, src })).concat(mine);
+  if (!pool.length) return null;
+  // bolsa barajada: no se repite ninguno hasta que hayan salido todos
+  bag[kind] = bag[kind].filter(k => pool.some(p => p.key === k));
+  if (!bag[kind].length) { bag[kind] = pool.map(p => p.key).sort(() => Math.random() - .5);
+    if (bag[kind].length > 1 && bag[kind][0] === lastShown[kind]) bag[kind].push(bag[kind].shift()) }
+  const key = bag[kind].shift(); lastShown[kind] = key;
+  const it = pool.find(p => p.key === key); return it.m || { src: it.src, type: "video/mp4" } }
+const urls = [];
+function mediaEl(m, cls) { let u = m.src; if (!u) { u = URL.createObjectURL(m.blob); urls.push(u) }
+  if (/^video/.test(m.type)) { const v = document.createElement("video"); v.src = u; v.playsInline = true; v.className = cls || ""; return v }
+  const im = document.createElement("img"); im.src = u; im.alt = ""; im.className = cls || ""; return im }
+async function renderMemes() {
+  const list = await allMemes();
+  for (const k of ["bien", "mal"]) { const box = $("th-" + k); box.innerHTML = "";
+    const mine = list.filter(m => m.kind === k);
+    if (!mine.length) box.innerHTML = `<p style="font-size:16px;color:#7a7060;grid-column:1/-1">Todavía no hay memes aquí.</p>`;
+    mine.forEach(m => { const d = document.createElement("div"); d.className = "th"; const el = mediaEl(m); if (el.tagName === "VIDEO") { el.muted = true; el.loop = true; el.autoplay = true }
+      d.append(el); const b = document.createElement("button"); b.type = "button"; b.textContent = "🗑️"; b.setAttribute("aria-label", "Quitar");
+      b.onclick = async () => { await delMeme(m.id); renderMemes() }; d.append(b); box.append(d) }) }
+}
+document.querySelectorAll("input[type=file]").forEach(inp => inp.addEventListener("change", async () => {
+  for (const f of inp.files) await addMeme(inp.dataset.kind, f); inp.value = ""; renderMemes() }));
+
+// ---------- pantallas
+function show(id) { ["home", "game", "end", "memes"].forEach(s => $(s).hidden = s !== id); window.scrollTo(0, 0) }
+function renderHome() {
+  $("players").innerHTML = players.map((n, i) => `<span class="chip${i === who ? " on" : ""}"><button type="button" data-p="${i}">${i ? "👧🏽" : "👧🏻"}</button><input data-n="${i}" value="${n.replace(/"/g, "&quot;")}" aria-label="Nombre de la jugadora ${i + 1}"></span>`).join("");
+  const p = prog();
+  $("islands").innerHTML = U.map((u, k) => { const r = p[k] || {}; const done = Object.keys(r).length, st = Object.values(r).filter(x => x === 2).length;
+    return `<button class="isl" type="button" data-u="${k}"><span class="ico">${u.ico}</span><b>${u.name}</b><small>${u.sub}</small>
+      <div class="bar"><i style="width:${done / 15 * 100}%"></i></div><div class="stars">⭐ ${st} de 15</div></button>` }).join("");
+  $("voiceBtn").textContent = "🔊 Leer en voz alta: " + (voice ? "sí" : "no");
+}
+$("players").addEventListener("click", e => { const b = e.target.closest("[data-p]"); if (b) { who = +b.dataset.p; store.set("who", who); renderHome() } });
+$("players").addEventListener("input", e => { const i = e.target.dataset.n; if (i != null) { players[+i] = e.target.value || "Jugadora " + (+i + 1); store.set("players", players) } });
+$("islands").addEventListener("click", e => { const b = e.target.closest("[data-u]"); if (b) startIsland(+b.dataset.u) });
+$("voiceBtn").onclick = () => { voice = !voice; store.set("voice", voice); if (!voice) try { speechSynthesis.cancel() } catch (e) {} renderHome() };
+$("toMemes").onclick = () => { show("memes"); renderMemes() };
+$("memesBack").onclick = () => { show("home"); renderHome() };
+
+// ---------- juego
+let cur = { u: 0, list: [], i: 0, tries: 0 };
+function startIsland(u, only) { const p = prog()[u] || {};
+  let list = only || [...Array(15).keys()];
+  cur = { u, list, i: 0, tries: 0 }; show("game"); renderQ() }
+function renderDots() { const r = prog()[cur.u] || {};
+  $("dots").innerHTML = cur.list.map((q, j) => `<i class="${r[q] === 2 ? "s" : r[q] ? "d" : ""}${j === cur.i ? " c" : ""}"></i>`).join("");
+  $("score").textContent = `${cur.i + 1} / ${cur.list.length}` }
+function renderQ() {
+  const Q = U[cur.u].qs[cur.list[cur.i]]; cur.tries = 0; cur.wrong = [];
+  $("qText").textContent = Q.q; $("qVis").innerHTML = Q.v || ""; $("qVis").hidden = !Q.v;
+  const box = $("opts"); box.className = "opts" + (Q.txt ? " txt" : "");
+  box.innerHTML = Q.o.map((o, k) => `<button class="opt" type="button" data-k="${k}"><span class="k">${"ABC"[k]}</span>${typeof o === "string" ? o : o.h}</button>`).join("");
+  renderDots(); speak(Q.q);
+}
+$("sayQ").onclick = () => { const Q = U[cur.u].qs[cur.list[cur.i]]; const wasOff = !voice; voice = true; speak(Q.q + ". " + Q.o.map((o, k) => "ABC"[k] + ": " + (typeof o === "string" ? o : o.say || "")).join(". ")); voice = !wasOff };
+$("back").onclick = () => { try { speechSynthesis.cancel() } catch (e) {} show("home"); renderHome() };
+$("opts").addEventListener("click", e => { const b = e.target.closest(".opt"); if (!b || b.disabled) return; answer(+b.dataset.k, b) });
+
+function answer(k, btn) {
+  const Q = U[cur.u].qs[cur.list[cur.i]], good = k === Q.a; cur.tries++;
+  const p = prog(); p[cur.u] = p[cur.u] || {};
+  if (good) p[cur.u][cur.list[cur.i]] = Math.max(p[cur.u][cur.list[cur.i]] || 0, cur.tries === 1 ? 2 : 1);
+  else if (cur.tries >= 2) p[cur.u][cur.list[cur.i]] = p[cur.u][cur.list[cur.i]] || 1;
+  saveProg(p);
+  const label = o => typeof o === "string" ? o : (o.say || "la opción " + "ABC"[Q.a]);
+  let why, actions;
+  if (good) { why = Q.ok; actions = [["Siguiente ➡", "go", next]] }
+  else if (cur.tries === 1) { btn.disabled = true; why = Q.no[k] + " ¡Inténtalo otra vez!"; actions = [["Intentar otra vez 🔁", "big", closeReact]] }
+  else { btn.disabled = true; why = Q.no[k] + ` La respuesta correcta es la ${"ABC"[Q.a]}${typeof Q.o[Q.a] === "string" ? ": " + Q.o[Q.a] : ""}. ` + Q.ok; actions = [["Siguiente ➡", "go", next]] }
+  react(good, why, actions);
+}
+let timer = null, curMedia = null;
+async function react(good, why, actions) {
+  try { speechSynthesis.cancel() } catch (e) {}
+  $("react").hidden = false; $("after").hidden = true; $("skip").hidden = false;
+  const media = $("media"); media.innerHTML = ""; media.className = "media"; media.hidden = false;
+  const m = await pickMeme(good ? "bien" : "mal");
+  let dur = 1800;
+  if (m) { const el = mediaEl(m); curMedia = el; media.append(el);
+    if (el.tagName === "VIDEO") { dur = 40000; el.onended = verdictNow; el.onerror = verdictNow; el.play().catch(() => { el.muted = true; el.play().catch(() => {}) }) } else dur = 3500 }
+  else { media.classList.add("fb"); media.innerHTML = `<div class="fallback${good ? "" : " no"}">${good ? ["🥳", "😻", "🎉", "🤩"][Math.floor(Math.random() * 4)] : ["🙀", "😿", "🤔", "😬"][Math.floor(Math.random() * 4)]}</div>` }
+  clearTimeout(timer); timer = setTimeout(verdictNow, dur);
+  function verdictNow() { clearTimeout(timer); if (!$("after").hidden) return;
+    if (curMedia && curMedia.pause) curMedia.pause(); media.hidden = true; $("skip").hidden = true;
+    $("verdict").className = "verdict " + (good ? "ok" : "no"); $("verdict").innerHTML = good ? "👍 BIEN!" : "👎 MAL";
+    $("whyText").textContent = why; $("after").hidden = false;
+    $("ract").innerHTML = ""; actions.forEach(([t, c, fn]) => { const b = document.createElement("button"); b.type = "button"; b.className = "btn " + c; b.textContent = t; b.onclick = fn; $("ract").append(b) });
+    speak((good ? "¡Bien! " : "Mal. ") + why) }
+  $("skip").onclick = verdictNow;
+  $("sayWhy").onclick = () => { const w = voice; voice = true; speak($("whyText").textContent); voice = w };
+}
+function closeReact() { clearTimeout(timer); $("react").hidden = true; $("media").innerHTML = ""; curMedia = null; while (urls.length > 40) URL.revokeObjectURL(urls.shift()) }
+function next() { closeReact(); if (cur.i + 1 < cur.list.length) { cur.i++; renderQ() } else finish() }
+function finish() { const r = prog()[cur.u] || {}; const st = cur.list.filter(q => r[q] === 2).length;
+  cur.missed = cur.list.filter(q => r[q] !== 2);
+  $("endIco").textContent = st === cur.list.length ? "🏆" : st >= cur.list.length / 2 ? "🌟" : "💪";
+  $("endTitle").textContent = `¡Terminaste ${U[cur.u].name}, ${players[who]}!`;
+  $("endText").textContent = `Ganaste ${st} estrellas de ${cur.list.length}.` + (cur.missed.length ? " Puedes repasar las que te costaron." : " ¡Todas al primer intento!");
+  $("redo").hidden = !cur.missed.length; show("end"); speak($("endTitle").textContent + " " + $("endText").textContent) }
+$("redo").onclick = () => startIsland(cur.u, cur.missed);
+$("endHome").onclick = () => { show("home"); renderHome() };
+openDB().then(() => {}); renderHome();
+try { speechSynthesis.getVoices() } catch (e) {}
+}
+</script>
+<script>try { if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {}) } catch (e) {}</script>
+</body>
+</html>
